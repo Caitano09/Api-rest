@@ -1,6 +1,5 @@
 const mysqlPool = require('../mysql')
 
-//RETORNA TODOS OS PEDIDOS
 const buscaTodosPedidos = async (req, res, next) => {
     try {
         const query = 'select pedidos.id, pedidos.quantidade ,produtos.id as produto_id, produtos.nome, produtos.preco from pedidos join produtos on produtos.id = pedidos.produto_id'
@@ -33,7 +32,6 @@ const buscaTodosPedidos = async (req, res, next) => {
     }
 }
 
-//INSERE UM PEDIDO
 const adicionaPedido = async(req, res, next) => {
     try {
         const querySelect = 'select * from produtos where id = ?'
@@ -69,7 +67,6 @@ const adicionaPedido = async(req, res, next) => {
     } 
 }
 
-//RETORNA UM PEDIDO
 const buscaPedido = async(req, res, next) => {
     try {
         const query = 'select * from pedidos where id = ?'
@@ -101,7 +98,6 @@ const buscaPedido = async(req, res, next) => {
     }    
 }
 
-//ATUALIZA UM PEDIDO
 const atualizaPedido = async(req, res, next) => {
     try {
         const query = 'update pedidos set quantidade = ?, produto_id = ? where id = ?'
@@ -134,7 +130,6 @@ const atualizaPedido = async(req, res, next) => {
     }
 }
 
-//DELETA UM PEDIDO
 const deletaPedido = async(req, res, next) => {
     try {
         const query = 'delete from pedidos where id = ?'

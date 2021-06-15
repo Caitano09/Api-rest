@@ -41,4 +41,17 @@ router.put('/:id', login.obrigatorio, upload.single('imagem'), produtosControlle
 
 router.delete('/:id', login.obrigatorio, produtosController.deletaProduto)
 
+//imagens
+router.get(
+    '/:id/imagem', 
+    produtosController.buscaTodasImagensProduto
+)
+
+router.post(
+    '/:id/imagem', 
+    login.obrigatorio, 
+    upload.single('imagem'), 
+    produtosController.adicionaImagemProduto
+)
+
 module.exports = router

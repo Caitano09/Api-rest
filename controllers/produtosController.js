@@ -1,10 +1,15 @@
 const mysqlPool = require('../mysql')
 
-//RETORNA TODOS OS PRODUTOS
 const buscaTodosProdutos = async (req, res, next) => {
     try {
-        const query = 'select * from produtos'
-        const result = await mysqlPool.execute(query)
+        let nome = ''
+        if(req.query.nome){
+            nome = req.query.nome
+        }
+        const query = `select * from produtos 
+                            where categoria_id = ?
+                            and nome like '%${nome}%'`/*retorna todos os valores que contém "req.query.nome"*/
+        const result = await mysqlPool.execute(query, [req.query.categoria_id])
 
         const response = {
             quantidadeTotalProdutos: result.length,
@@ -29,11 +34,10 @@ const buscaTodosProdutos = async (req, res, next) => {
     }  
 }
 
-//INSERE UM PRODUTO
 const adicionaProduto = async(req, res, next) => {
     try {
-        const query = 'insert into produtos (nome, preco, imagem) values (?, ?, ?)'
-        const result = await mysqlPool.execute(query, [req.body.nome, req.body.preco, req.file.path])
+        const query = 'insert into produtos (nome, preco, imagem, categoria_id) values (?, ?, ?, ?)'
+        const result = await mysqlPool.execute(query, [req.body.nome, req.body.preco, req.file.path, req.body.categoria_id])
 
         const response = {
             mensagem: 'Produto inserido com Sucesso',
@@ -42,6 +46,7 @@ const adicionaProduto = async(req, res, next) => {
                 nome: req.body.nome,
                 preco: req.body.preco,
                 imagem: req.file.path,
+                categoria_id: req.body.categoria_id,
                 request: {
                     tipo: 'GET',
                     descricao: 'Retorna todos os Produtos',
@@ -57,7 +62,6 @@ const adicionaProduto = async(req, res, next) => {
     }   
 }
 
-//RETORNA UM PRODUTO
 const buscaProduto = async(req, res, next) => {
     try {
         const query = 'select * from produtos where id = ?'
@@ -90,7 +94,6 @@ const buscaProduto = async(req, res, next) => {
     }   
 }
 
-//ATUALIZA UM PRODUTO
 const atualizaProduto = async(req, res, next) => {
     try {
         const query = 'update produtos set nome = ?, preco = ? where id = ?'
@@ -123,7 +126,6 @@ const atualizaProduto = async(req, res, next) => {
     } 
 }
 
-//DELETA UM PRODUTO
 const deletaProduto = async(req, res, next) => {
     try {
         const query = 'delete from produtos where id = ?'
@@ -156,10 +158,60 @@ const deletaProduto = async(req, res, next) => {
     }   
 }
 
+const buscaTodasImagensProduto = async (req, res, next) => {
+    try {
+        const query = 'select * from imagens_produtos where produto_id = ?'
+        const result = await mysqlPool.execute(query, [req.params.id])
+
+        const response = {
+            quantidadeTotalProdutos: result.length,
+            imagens: result.map(img => {
+                return {
+                    id_produto: img.produto_id,
+                    id_imagem: img.id,
+                    caminho: img.caminho,
+                }
+            })
+        }
+        return res.status(200).send(response)
+
+    } catch (error) {
+        return res.status(500).send({ error })
+    }  
+}
+
+const adicionaImagemProduto = async(req, res, next) => {
+    try {
+        const query = 'insert into imagens_produtos (produto_id, caminho) values (?, ?)'
+        const result = await mysqlPool.execute(query, [req.params.id, req.file.path])
+
+        const response = {
+            mensagem: 'Imagem inserida com Sucesso',
+            ImagemCriada: {
+                idProduto: req.params.id,
+                idImagem: result.insertId,
+                imagem: req.file.path,
+                request: {
+                    tipo: 'GET',
+                    descricao: 'Retorna todos as imagens do Produto',
+                    url: 'http://localhost:3000/produtos/'+req.params.id+'/imagem'
+                }
+            }
+        }
+
+        return res.status(201).send(response)
+        
+    } catch (error) {
+        return res.status(500).send({ error })
+    }   
+}
+
 module.exports = {
     buscaTodosProdutos,
     buscaProduto,
     adicionaProduto,
     atualizaProduto,
-    deletaProduto
+    deletaProduto,
+    buscaTodasImagensProduto,
+    adicionaImagemProduto
 }
